@@ -31,7 +31,14 @@ Manual installation of the supplied `tgt-setup-lun-one` script. This script will
 Password-less sudo permission for: `tgtadm`, `tgt-setup-lun-one`, `lvcreate`, `lvremove` and `dd`.
 LVM2 Linux SCSI target framework (tgt).
 
-# Installation 
+# Installation
+
+To install the driver you have to copy these files:
+
+* `tm` -> `/var/lib/one/remotes/tm/iscsi`
+* `datastore` -> `/var/lib/one/remotes/datastore/iscsi`
+* `bin/tgt-setup-lun-one` -> `/usr/sbin/tgt-setup-lun-one`
+
 # Configuration
 
 ## Configuring the System Datastore
@@ -141,7 +148,7 @@ Under `/var/lib/one/remotes/`:
 
 
 
-# References 
+# References
 
 
 
