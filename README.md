@@ -10,14 +10,12 @@ There are some limitations that you have to consider, though:
 
 # Authors
 
-* OpenNebula Team
 * C12G Labs
+* Erez Zilber (tgt-setup-lun-one)
 
 # Compatibility
 
 This add-on is compatible with OpenNebula 4.2.
-
-# Features
 
 # Requirements
 
