@@ -34,13 +34,13 @@ LVM2 Linux SCSI target framework (tgt).
 # Installation 
 # Configuration
 
-##Configuring the System Datastore
+## Configuring the System Datastore
 
 To use iSCSI drivers, you must configure the system datastore as shared. This sytem datastore will hold only the symbolic links to the block devices, so it will not take much space. See more details on the System Datastore Guide
 
 It will also be used to hold context images and Disks created on the fly, they will be created as regular files.
 
-##Configuring iSCSI Datastores
+## Configuring iSCSI Datastores
 
 The first step to create a iSCSI datastore is to set up a template file for it. In the following table you can see the supported configuration attributes. The datastore type is set by its drivers, in this case be sure to add `DS_MAD=iscsi` and `TM_MAD=iscsi` for the transfer mechanism, see below.
 
@@ -96,6 +96,8 @@ The default values can be modified in `/var/lib/one/remotes/datastore/iscsi/iscs
 # Usage 
 
 The iSCSI transfer driver will issue a iSCSI discover command in the target server with iscsiadm. Once the block device is available in the host, the driver will login, mount it and link it to disk.i.
+
+![ds_iscsi](images/ds_iscsi.png)
 
 ## Host Configuration
 
