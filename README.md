@@ -13,9 +13,9 @@ There are some limitations that you have to consider, though:
 * OpenNebula Team
 * C12G Labs
 
-# Compatibility (with OpenNebula versions)
+# Compatibility
 
-This version is compatible with OpenNebula 4.2.
+This add-on is compatible with OpenNebula 4.2.
 
 # Features
 
@@ -105,7 +105,7 @@ In order for `iscsiadm` to work, it needs to be able to make a connection on the
 
 The `oneadmin` user must have sudo permissions to execute `iscsiadm`.
 
-# References (to external web sites)
+# References 
 
 
 
