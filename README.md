@@ -36,7 +36,7 @@ LVM2 Linux SCSI target framework (tgt).
 
 ## Configuring the System Datastore
 
-To use iSCSI drivers, you must configure the system datastore as shared. This sytem datastore will hold only the symbolic links to the block devices, so it will not take much space. See more details on the System Datastore Guide
+To use iSCSI drivers, you must configure the system datastore as shared. This sytem datastore will hold only the symbolic links to the block devices, so it will not take much space. See more details on the [System Datastore Guide](http://opennebula.org/documentation:rel4.4:system_ds).
 
 It will also be used to hold context images and Disks created on the fly, they will be created as regular files.
 
@@ -81,7 +81,7 @@ ID: 100
 
 The DS and TM MAD can be changed later using the onedatastore update command. You can check more details of the datastore by issuing the onedatastore show command.
 
-> Note that datastores are not associated to any cluster by default, and they are supposed to be accessible by every single host. If you need to configure datastores for just a subset of the hosts take a look to the Cluster guide.
+> Note that datastores are not associated to any cluster by default, and they are supposed to be accessible by every single host. If you need to configure datastores for just a subset of the hosts take a look to the [Cluster guide](http://opennebula.org/documentation:rel4.4:cluster_guide).
 
 ## Configuring Default Values
 
@@ -101,11 +101,45 @@ The iSCSI transfer driver will issue a iSCSI discover command in the target serv
 
 ## Host Configuration
 
-The hosts must have Open-iSCSI installed, which provides `iscsiadm`.
+The hosts must have [Open-iSCSI](http://www.open-iscsi.org/) installed, which provides `iscsiadm`.
 
 In order for `iscsiadm` to work, it needs to be able to make a connection on the default iSCSI port (3260) with the iSCSI target server. Firewalls should be adjusted to allow this connection to take place.
 
 The `oneadmin` user must have sudo permissions to execute `iscsiadm`.
+
+# Tuning & Extending
+
+System administrators and integrators are encouraged to modify these drivers in order to integrate them with their iSCSI SAN/NAS solution. To do so, the following is a list of files that may be adapted:
+
+Under `/var/lib/one/remotes/`:
+
+* `datastore/iscsi/iscsi.conf`: Default values for iSCSI parameters
+    * **HOST**: Default iSCSI target host
+    * **BASE_IQN**: Default IQN path
+    * **VG_NAME**: Default volume group
+    * **BASE_TID**: Starting TID for iSCSI targets
+    * **NO_ISCSI**: Lists of hosts (separated by spaces) for which no iscsiadm login or logout.
+* `scripts_common.sh`: includes all the iSCSI methods:
+    * `tgt_admin_dump_config` (file): Dumps the configuration to a file
+    * `tgt_setup_lun_install` (host, base_path): checks if tgt-setup-lun-one is installed in host. It creates a file to avoid further ssh connections if it's installed.
+    * `tgt_setup_lun` (iqn, dev): creates a new iSCSI target using the tgt-setup-lun-one script.
+    * `iscsiadm_discovery` (host): Issues iscsiadm discovery.
+    * `iscsiadm_login` (iqn, target_host): Logins to an already discovered IQN.
+    * `iscsiadm_logout` (target_it): Logs out from an IQN.
+    * `is_iscsi` (host): Returns 0 if logins/logouts should be performed on that host.
+    * `iqn_get_lv_name` (iqn): Extracts the logical volume name which is encoded in the IQN.
+    * `iqn_get_vg_name` (iqn): Extracts the volume group name which is encoded in the IQN.
+    * `iqn_get_host` (iqn): Extracts the iSCSI target host which is encoded in the IQN.
+* `datastore/iscsi/cp`: Registers a new image. Creates a new logical volume under LVM and sets an iSCSI target for it.
+* `datastore/iscsi/mkfs`: Makes a new empty image. Creates a new logical volume under LVM and sets an iSCSI target for it.
+* `datastore/iscsi/rm`: Removes the iSCSI target and removes the logical volume.
+* `tm/iscsi/ln`: iscsiadm discover and logs in.
+* `tm/iscsi/clone`: Creates a new iSCSI target cloning the source underlying LVM logical volumen.
+* `tm/iscsi/mvds`: Logs out for shutdown, cancel, delete, stop and migrate.
+
+> All the actions that perform a change in the iSCSI target server dump the configuration at the end of the action, so the iSCSI server configuration remains persistent. This can be disabled by modifying `/var/lib/one/remotes/datastore/iscsi/iscsi.conf`.
+
+
 
 # References 
 
