@@ -83,7 +83,7 @@ The DS and TM MAD can be changed later using the onedatastore update command. Yo
 
 > Note that datastores are not associated to any cluster by default, and they are supposed to be accessible by every single host. If you need to configure datastores for just a subset of the hosts take a look to the Cluster guide.
 
-## Configuring default values
+## Configuring Default Values
 
 The default values can be modified in `/var/lib/one/remotes/datastore/iscsi/iscsi.conf`:
 
