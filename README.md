@@ -6,9 +6,8 @@ The iSCSI datastore driver provides OpenNebula with the possibility of using blo
 
 It is developed to work with `tgtd`, the Linux SCSI target framework. However this driver is written in a way it can be easily hacked into working with specific SAN systems or other iSCSI target softwares.
 
-There are some limitations that you have to consider, though:
+How to Contribute: OpenNebula Add-on (http://opennebula.org/software:add-ons)
 
-* No iSCSI ACLs. This driver doesn't implement ACLs or zoning for the targets defined in the server. This means that every host will be able to see through discovery all the targets exported by the iSCSI target server, as long as it can make a connection to the host on the iscsi port.
 
 # Authors
 
@@ -17,7 +16,6 @@ There are some limitations that you have to consider, though:
 
 # Development
 
-* How to Contribute: OpenNebula Add-on (http://opennebula.org/software:add-ons)
 * Support: OpenNebula user  mailing list (http://opennebula.org/community:mailinglists)
 * Development: OpenNebula developers  mailing list (http://opennebula.org/community:mailinglists)
 * Issues Tracking: Github issues (https://github.com/OpenNebula/addon-iscsi/issues)
@@ -37,6 +35,12 @@ Password-less ssh access to the iSCSI target as the oneadmin user from the front
 Manual installation of the supplied `tgt-setup-lun-one` script. This script will be installed under the share directory of OpenNebula (`/usr/share/one` or `/usr/share/opennebula` depending on the distribution). This script script should be installed in the iSCSI target somewhere in the `PATH`, e.g. `/usr/sbin/tgt-setup-lun-one` and it should belong to root.
 Password-less sudo permission for: `tgtadm`, `tgt-setup-lun-one`, `lvcreate`, `lvremove` and `dd`.
 LVM2 Linux SCSI target framework (tgt).
+
+# Limitations
+
+There are some limitations that you have to consider, though:
+
+* No iSCSI ACLs. This driver doesn't implement ACLs or zoning for the targets defined in the server. This means that every host will be able to see through discovery all the targets exported by the iSCSI target server, as long as it can make a connection to the host on the iscsi port.
 
 # Installation
 
