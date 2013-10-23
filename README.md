@@ -10,7 +10,7 @@ There are some limitations that you have to consider, though:
 
 # Authors
 
-* C12G Labs
+* Leader: Jaime Melis (jmelis@c12g.com)
 * Erez Zilber (tgt-setup-lun-one)
 
 # Compatibility
