@@ -13,6 +13,12 @@ There are some limitations that you have to consider, though:
 * Leader: Jaime Melis (jmelis@c12g.com)
 * Erez Zilber (tgt-setup-lun-one)
 
+# Development
+
+* Support: OpenNebula user support mailing list (http://opennebula.org/community:mailinglists)
+* Development: OpenNebula user support mailing list (http://opennebula.org/community:mailinglists)
+* Issues Tracking: Github issues
+
 # Compatibility
 
 This add-on is compatible with OpenNebula 4.2.
