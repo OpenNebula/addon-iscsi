@@ -1,46 +1,46 @@
-iSCSI Storage Driver
+# iSCSI Storage Driver
 
-# Description
+## Description
 
 The iSCSI datastore driver provides OpenNebula with the possibility of using block-devices for VM images instead of the default file form. The use of the iSCSI datastores presents several benefits, especially regarding performance. It is developed to work with `tgtd`, the Linux SCSI target framework. However this driver is written in a way it can be easily hacked into working with specific SAN systems or other iSCSI target softwares.
 
 How to Contribute: http://opennebula.org/software:add-ons
 
 
-# Authors
+## Authors
 
 * Leader: Jaime Melis (jmelis@c12g.com)
 * Erez Zilber (tgt-setup-lun-one)
 
-# Development
+## Development
 
 * Support: OpenNebula user  mailing list (http://opennebula.org/community:mailinglists)
 * Development: OpenNebula developers  mailing list (http://opennebula.org/community:mailinglists)
 * Issues Tracking: Github issues (https://github.com/OpenNebula/addon-iscsi/issues)
 
-# Compatibility
+## Compatibility
 
 This add-on is compatible with OpenNebula 4.2.
 
-# Requirements
+## Requirements
 
-## OpenNebula Front-end
+### OpenNebula Front-end
 
 Password-less ssh access to the iSCSI target as the oneadmin user from the frontend.
 
-## The iSCSI Target
+### The iSCSI Target
 
 Manual installation of the supplied `tgt-setup-lun-one` script. This script will be installed under the share directory of OpenNebula (`/usr/share/one` or `/usr/share/opennebula` depending on the distribution). This script script should be installed in the iSCSI target somewhere in the `PATH`, e.g. `/usr/sbin/tgt-setup-lun-one` and it should belong to root.
 Password-less sudo permission for: `tgtadm`, `tgt-setup-lun-one`, `lvcreate`, `lvremove` and `dd`.
 LVM2 Linux SCSI target framework (tgt).
 
-# Limitations
+## Limitations
 
 There are some limitations that you have to consider, though:
 
 * No iSCSI ACLs. This driver doesn't implement ACLs or zoning for the targets defined in the server. This means that every host will be able to see through discovery all the targets exported by the iSCSI target server, as long as it can make a connection to the host on the iscsi port.
 
-# Installation
+## Installation
 
 To install the driver you have to copy these files:
 
@@ -48,15 +48,15 @@ To install the driver you have to copy these files:
 * `datastore` -> `/var/lib/one/remotes/datastore/iscsi`
 * `bin/tgt-setup-lun-one` -> `/usr/sbin/tgt-setup-lun-one`
 
-# Configuration
+## Configuration
 
-## Configuring the System Datastore
+### Configuring the System Datastore
 
 To use iSCSI drivers, you must configure the system datastore as shared. This sytem datastore will hold only the symbolic links to the block devices, so it will not take much space. See more details on the [System Datastore Guide](http://opennebula.org/documentation:rel4.4:system_ds).
 
 It will also be used to hold context images and Disks created on the fly, they will be created as regular files.
 
-## Configuring iSCSI Datastores
+### Configuring iSCSI Datastores
 
 The first step to create a iSCSI datastore is to set up a template file for it. In the following table you can see the supported configuration attributes. The datastore type is set by its drivers, in this case be sure to add `DS_MAD=iscsi` and `TM_MAD=iscsi` for the transfer mechanism, see below.
 
@@ -99,7 +99,7 @@ The DS and TM MAD can be changed later using the onedatastore update command. Yo
 
 > Note that datastores are not associated to any cluster by default, and they are supposed to be accessible by every single host. If you need to configure datastores for just a subset of the hosts take a look to the [Cluster guide](http://opennebula.org/documentation:rel4.4:cluster_guide).
 
-## Configuring Default Values
+### Configuring Default Values
 
 The default values can be modified in `/var/lib/one/remotes/datastore/iscsi/iscsi.conf`:
 
@@ -109,13 +109,13 @@ The default values can be modified in `/var/lib/one/remotes/datastore/iscsi/iscs
 * **NO_ISCSI**: Lists of hosts (separated by spaces) for which no iscsiadm login or logout is performed. Default: `$HOSTNAME`
 * **TARGET_CONF**: File where the iSCSI configured is dumped to (`tgt-admin –dump`). If it poings to `/dev/null`, iSCSI targets will not be persistent. Default: `/etc/tgt/targets.conf`
 
-# Usage 
+## Usage 
 
 The iSCSI transfer driver will issue a iSCSI discover command in the target server with iscsiadm. Once the block device is available in the host, the driver will login, mount it and link it to disk.i.
 
 ![ds_iscsi](images/ds_iscsi.png)
 
-## Host Configuration
+### Host Configuration
 
 The hosts must have [Open-iSCSI](http://www.open-iscsi.org/) installed, which provides `iscsiadm`.
 
@@ -123,7 +123,7 @@ In order for `iscsiadm` to work, it needs to be able to make a connection on the
 
 The `oneadmin` user must have sudo permissions to execute `iscsiadm`.
 
-# Tuning & Extending
+## Tuning & Extending
 
 System administrators and integrators are encouraged to modify these drivers in order to integrate them with their iSCSI SAN/NAS solution. To do so, the following is a list of files that may be adapted:
 
@@ -154,10 +154,5 @@ Under `/var/lib/one/remotes/`:
 * `tm/iscsi/mvds`: Logs out for shutdown, cancel, delete, stop and migrate.
 
 > All the actions that perform a change in the iSCSI target server dump the configuration at the end of the action, so the iSCSI server configuration remains persistent. This can be disabled by modifying `/var/lib/one/remotes/datastore/iscsi/iscsi.conf`.
-
-
-
-# References
-
 
 
