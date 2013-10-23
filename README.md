@@ -1,3 +1,5 @@
+iSCSI Storage Driver
+
 # Introduction
 
 The iSCSI datastore driver provides OpenNebula with the possibility of using block-devices for VM images instead of the default file form. The use of the iSCSI datastores presents several benefits, especially regarding performance.
@@ -15,8 +17,9 @@ There are some limitations that you have to consider, though:
 
 # Development
 
-* Support: OpenNebula user support mailing list (http://opennebula.org/community:mailinglists)
-* Development: OpenNebula user support mailing list (http://opennebula.org/community:mailinglists)
+* How to Contribute: OpenNebula Add-on (http://opennebula.org/software:add-ons)
+* Support: OpenNebula user  mailing list (http://opennebula.org/community:mailinglists)
+* Development: OpenNebula developers  mailing list (http://opennebula.org/community:mailinglists)
 * Issues Tracking: Github issues (https://github.com/OpenNebula/addon-iscsi/issues)
 
 # Compatibility
