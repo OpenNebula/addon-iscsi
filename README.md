@@ -1,12 +1,12 @@
 iSCSI Storage Driver
 
-# Introduction
+# Description
 
 The iSCSI datastore driver provides OpenNebula with the possibility of using block-devices for VM images instead of the default file form. The use of the iSCSI datastores presents several benefits, especially regarding performance.
 
 It is developed to work with `tgtd`, the Linux SCSI target framework. However this driver is written in a way it can be easily hacked into working with specific SAN systems or other iSCSI target softwares.
 
-How to Contribute: OpenNebula Add-on (http://opennebula.org/software:add-ons)
+How to Contribute: http://opennebula.org/software:add-ons
 
 
 # Authors
