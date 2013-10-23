@@ -17,7 +17,7 @@ There are some limitations that you have to consider, though:
 
 * Support: OpenNebula user support mailing list (http://opennebula.org/community:mailinglists)
 * Development: OpenNebula user support mailing list (http://opennebula.org/community:mailinglists)
-* Issues Tracking: Github issues
+* Issues Tracking: Github issues (https://github.com/OpenNebula/addon-iscsi/issues)
 
 # Compatibility
 
