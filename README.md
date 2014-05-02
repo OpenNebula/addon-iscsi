@@ -100,6 +100,59 @@ The DS and TM MAD can be changed later using the onedatastore update command. Yo
 
 > Note that datastores are not associated to any cluster by default, and they are supposed to be accessible by every single host. If you need to configure datastores for just a subset of the hosts take a look to the [Cluster guide](http://opennebula.org/documentation:rel4.4:cluster_guide).
 
+### Configuring DS_MAD and TM_MAD
+
+These values must be added to `/etc/one/oned.conf`
+
+First we add `iscsi` as an option, replace:
+
+~~~~
+TM_MAD = [
+    executable = "one_tm",
+    arguments = "-t 15 -d dummy,lvm,shared,fs_lvm,qcow2,ssh,vmfs,ceph"
+]
+~~~~
+
+With:
+
+~~~~
+TM_MAD = [
+    executable = "one_tm",
+    arguments = "-t 15 -d dummy,lvm,shared,fs_lvm,qcow2,ssh,vmfs,ceph,iscsi"
+]
+~~~~
+
+After that create a new TM_MAD_CONF section:
+
+~~~~
+TM_MAD_CONF = [
+    name        = "iscsi",
+    ln_target   = "NONE",
+    clone_target= "SELF",
+    shared      = "yes"
+]
+~~~~
+
+Now we add `iscsi` as a new `DATASTORE_MAD` option, replace:
+
+~~~~
+DATASTORE_MAD = [
+    executable = "one_datastore",
+    arguments  = "-t 15 -d dummy,fs,vmfs,lvm,ceph"
+]
+~~~~
+
+With:
+
+~~~~
+DATASTORE_MAD = [
+    executable = "one_datastore",
+    arguments  = "-t 15 -d dummy,fs,vmfs,lvm,ceph,iscsi"
+]
+~~~~
+
+
+
 ### Configuring Default Values
 
 The default values can be modified in `/var/lib/one/remotes/datastore/iscsi/iscsi.conf`:
