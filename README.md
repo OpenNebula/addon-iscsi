@@ -21,7 +21,7 @@ More info:
 
 ## Compatibility
 
-This add-on is compatible with OpenNebula 4.2.
+This add-on is compatible with OpenNebula 4.6.
 
 ## Requirements
 
