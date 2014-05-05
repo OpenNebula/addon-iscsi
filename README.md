@@ -9,7 +9,7 @@ The iSCSI datastore driver provides OpenNebula with the possibility of using blo
 To contribute bug patches or new features, you can use the github Pull Request model. It is assumed that code and documentation are contributed under the Apache License 2.0. 
 
 More info:
-* [How to Contribute](http://opennebula.org/software:add-ons#how_to_contribute_to_an_existing_add-on)
+* [How to Contribute](http://opennebula.org/addons/contribute/)
 * Support: [OpenNebula user mailing list](http://opennebula.org/community:mailinglists)
 * Development: [OpenNebula developers mailing list](http://opennebula.org/community:mailinglists)
 * Issues Tracking: Github issues (https://github.com/OpenNebula/addon-iscsi/issues)
@@ -21,7 +21,7 @@ More info:
 
 ## Compatibility
 
-This add-on is compatible with OpenNebula 4.2.
+This add-on is compatible with OpenNebula 4.6.
 
 ## Requirements
 
@@ -53,7 +53,7 @@ To install the driver you have to copy these files:
 
 ### Configuring the System Datastore
 
-To use iSCSI drivers, you must configure the system datastore as shared. This sytem datastore will hold only the symbolic links to the block devices, so it will not take much space. See more details on the [System Datastore Guide](http://opennebula.org/documentation:rel4.4:system_ds).
+To use iSCSI drivers, you must configure the system datastore as shared. This sytem datastore will hold only the symbolic links to the block devices, so it will not take much space. See more details on the [System Datastore Guide](http://docs.opennebula.org/4.6/administration/storage/system_ds.html).
 
 It will also be used to hold context images and Disks created on the fly, they will be created as regular files.
 
@@ -99,6 +99,59 @@ ID: 100
 The DS and TM MAD can be changed later using the onedatastore update command. You can check more details of the datastore by issuing the onedatastore show command.
 
 > Note that datastores are not associated to any cluster by default, and they are supposed to be accessible by every single host. If you need to configure datastores for just a subset of the hosts take a look to the [Cluster guide](http://opennebula.org/documentation:rel4.4:cluster_guide).
+
+### Configuring DS_MAD and TM_MAD
+
+These values must be added to `/etc/one/oned.conf`
+
+First we add `iscsi` as an option, replace:
+
+~~~~
+TM_MAD = [
+    executable = "one_tm",
+    arguments = "-t 15 -d dummy,lvm,shared,fs_lvm,qcow2,ssh,vmfs,ceph"
+]
+~~~~
+
+With:
+
+~~~~
+TM_MAD = [
+    executable = "one_tm",
+    arguments = "-t 15 -d dummy,lvm,shared,fs_lvm,qcow2,ssh,vmfs,ceph,iscsi"
+]
+~~~~
+
+After that create a new TM_MAD_CONF section:
+
+~~~~
+TM_MAD_CONF = [
+    name        = "iscsi",
+    ln_target   = "NONE",
+    clone_target= "SELF",
+    shared      = "yes"
+]
+~~~~
+
+Now we add `iscsi` as a new `DATASTORE_MAD` option, replace:
+
+~~~~
+DATASTORE_MAD = [
+    executable = "one_datastore",
+    arguments  = "-t 15 -d dummy,fs,vmfs,lvm,ceph"
+]
+~~~~
+
+With:
+
+~~~~
+DATASTORE_MAD = [
+    executable = "one_datastore",
+    arguments  = "-t 15 -d dummy,fs,vmfs,lvm,ceph,iscsi"
+]
+~~~~
+
+
 
 ### Configuring Default Values
 
