@@ -90,11 +90,11 @@ ssh_exec_and_log "$SRC_HOST" "$LOGOUT_CMD" \
 
 LV_NAME=`echo $IQN|$AWK -F. '{print $(NF)}'`
 VG_NAME=`echo $IQN|$AWK -F. '{print $(NF-1)}'`
-SOURCE_DEV="/dev/$VG_NAME/$LV_NAME"
+SOURCE_DEV="/$VG_NAME/$LV_NAME"
 
 TARGET=`arg_path $IQN`
 TARGET_LV_NAME=`echo $NEW_IQN|$AWK -F. '{print $(NF)}'`
-TARGET_DEV="/dev/$VG_NAME/$TARGET_LV_NAME"
+TARGET_DEV="/$VG_NAME/$TARGET_LV_NAME"
 TARGET_HOST="${TARGET%.$VG_NAME.$LV_NAME}"
 
 CLONE_CMD=$(cat <<EOF
@@ -109,7 +109,7 @@ CLONE_CMD=$(cat <<EOF
 
         $SUDO $(tgtadm_target_delete "\$TID")
         $SUDO $SYNC
-        $SUDO $LVREMOVE -f $VG_NAME/$LV_NAME
+        $SUDO zfs destroy $VG_NAME/$LV_NAME
         $SUDO $(tgt_admin_dump_config "$TARGET_CONF")
     fi
 EOF

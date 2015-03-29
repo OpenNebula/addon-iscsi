@@ -55,7 +55,7 @@ BASE_IQN=`echo $IQN|$CUT -d: -f1`
 TARGET=`echo $IQN|$CUT -d: -f2`
 LV_NAME=`echo $TARGET|$AWK -F. '{print $(NF)}'`
 VG_NAME=`echo $TARGET|$AWK -F. '{print $(NF-1)}'`
-TARGET_DEV="/dev/$VG_NAME/$LV_NAME"
+TARGET_DEV="/$VG_NAME/$LV_NAME"
 TARGET_HOST=${TARGET%.$VG_NAME.$LV_NAME}
 
 LINK_CMD=$(cat <<EOF

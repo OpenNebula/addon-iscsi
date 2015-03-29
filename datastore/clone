@@ -76,14 +76,14 @@ set_up_datastore "$BASE_PATH" "$RESTRICTED_DIRS" "$SAFE_DIRS"
 
 LV_NAME="lv-one-${ID}"
 IQN="$BASE_IQN:$DST_HOST.$VG_NAME.$LV_NAME"
-DEV="/dev/$VG_NAME/$LV_NAME"
+DEV="/$VG_NAME/$LV_NAME"
 
 LV_SRC=$(echo $SRC|awk -F. '{print $NF}')
-DEV_SRC="/dev/$VG_NAME/$LV_SRC"
+DEV_SRC="/$VG_NAME/$LV_SRC"
 
 CLONE_CMD=$(cat <<EOF
     set -e
-    $SUDO $LVCREATE -L${SIZE}M ${VG_NAME} -n ${LV_NAME}
+    $SUDO zfs create -V ${SIZE}M ${VG_NAME}/${LV_NAME}
     $SUDO $DD if=$DEV_SRC of=$DEV bs=2M
 
     $SUDO $(tgt_setup_lun "$IQN" "$DEV")

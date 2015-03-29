@@ -65,9 +65,9 @@ set -e
 
 VG_OPTS="--units M -C --noheadings --nosuffix $VG_NAME"
 
-TOTAL_MB=\$($SUDO $VGDISPLAY -o vg_size \$VG_OPTS | $TR -d ' ')
-FREE_MB=\$($SUDO $VGDISPLAY -o vg_free \$VG_OPTS | $TR -d ' ')
-USED_MB=\$($AWK "BEGIN {print \$TOTAL_MB - \$FREE_MB}")
+TOTAL_MB=\$($SUDO zfs list -H -p  -o available,used $VG_NAME | $AWK '{printf "%d", ($1+$2)/1024/1024}'  | $TR -d ' ')
+FREE_MB=\$($SUDO zfs get -H -p available $VG_NAME | $AWK awk '{printf "%d",$3/1024/1024}' | $TR -d ' ')
+USED_MB=\$(zfs get -H -p used $VG_NAME | $AWK '{printf "%d",$3/1024/1024}' | $TR -d ' ')
 
 echo "USED_MB=\$USED_MB"
 echo "TOTAL_MB=\$TOTAL_MB"

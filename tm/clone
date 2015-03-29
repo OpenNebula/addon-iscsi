@@ -61,10 +61,10 @@ NEW_IQN=$IQN-$VMID
 
 VG_NAME=`echo $TARGET|$AWK -F. '{print $(NF-1)}'`
 LV_NAME=`echo $TARGET|$AWK -F. '{print $(NF)}'`
-SOURCE_DEV="/dev/$VG_NAME/$LV_NAME"
+SOURCE_DEV="$VG_NAME/$LV_NAME"
 
 TARGET_LV_NAME=`echo $LV_NAME-$VMID`
-TARGET_DEV="/dev/${VG_NAME}/${TARGET_LV_NAME}"
+TARGET_DEV="${VG_NAME}/${TARGET_LV_NAME}"
 TARGET_HOST="${TARGET%.$VG_NAME.$LV_NAME}"
 
 #-------------------------------------------------------------------------------
@@ -75,10 +75,10 @@ CLONE_CMD=$(cat <<EOF
     set -e
 
     # get size
-    SIZE=\$($SUDO $LVS --noheadings -o lv_size "$SOURCE_DEV")
+    SIZE=\$($SUDO zfs list -H -p  -o available,used $VG_NAME | $AWK '{printf "%d", ($1+$2)/1024/1024}'  | $TR -d ' ')
 
     # create lv
-    $SUDO $LVCREATE -L\${SIZE} ${VG_NAME} -n ${TARGET_LV_NAME}
+    $SUDO zfs create -V \${SIZE}m ${VG_NAME}/${TARGET_LV_NAME}
 
     # clone lv with dd
     $SUDO $DD if=$SOURCE_DEV of=$TARGET_DEV bs=2M
