@@ -74,21 +74,23 @@ fi
 
 if [ "$VBD_TYPE" = "lvm" ]
 then
-	TARGET=`arg_path $IQN`
-	VG_NAME=`echo $TARGET|$AWK -F. '{print $(NF-1)}'`
-	LV_NAME=`echo $TARGET|$AWK -F. '{print $(NF)}'`
-	DEV="/dev/$VG_NAME/$LV_NAME"
-	TARGET_HOST="${TARGET%.$VG_NAME.$LV_NAME}"
-	TARGET_LV_NAME=`echo $NEW_IQN|$AWK -F. '{print $(NF)}'`
+    TARGET=`arg_path $IQN`
+    VG_NAME=`echo $TARGET|$AWK -F. '{print $(NF-1)}'`
+    LV_NAME=`echo $TARGET|$AWK -F. '{print $(NF)}'`
+    DEV="/dev/$VG_NAME/$LV_NAME"
+    TARGET_HOST="${TARGET%.$VG_NAME.$LV_NAME}"
+
+    TARGET_LV_NAME=`echo $NEW_IQN|$AWK -F. '{print $(NF)}'`
 elif [ "$VBD_TYPE" = "zfs" ]
 then
-	TARGET=`arg_path $IQN`
-	_DATASET_NAME=`echo $TARGET|$AWK -F. '{print $(NF-1)}'`
-	LV_NAME=`echo $TARGET|$AWK -F. '{print $(NF)}'`
-	DEV="/$DATASET_NAME/$LV_NAME"
-	TARGET_HOST="${TARGET%.$_DATASET_NAME.$LV_NAME}"
-	TARGET_LV_NAME=`echo $NEW_IQN|$AWK -F. '{print $(NF)}'`
+    TARGET=`arg_path $IQN`
+    _DATASET_NAME=`echo $TARGET|$AWK -F. '{print $(NF-1)}'`
+    LV_NAME=`echo $TARGET|$AWK -F. '{print $(NF)}'`
+    DEV="/$DATASET_NAME/$LV_NAME"
+    TARGET_HOST="${TARGET%.$_DATASET_NAME.$LV_NAME}"
+    TARGET_LV_NAME=`echo $NEW_IQN|$AWK -F. '{print $(NF)}'`
 fi
+
 #-------------------------------------------------------------------------------
 # Remove directory if dst_path is a directory
 #-------------------------------------------------------------------------------
@@ -122,35 +124,39 @@ fi
 #-------------------------------------------------------------------------------
 if [ "$VBD_TYPE" = "lvm" ]
 then
-	DELETE_CMD=$(cat <<EOF
-		set -e
-		# get tid for IQN
-		TID=\$($SUDO $(tgtadm_get_tid_for_iqn "$NEW_IQN"))
-		# remove iscsi target
-		$SUDO $(tgtadm_target_delete "\$TID")
-		# dump configuration
-		$SUDO $(tgt_admin_dump_config "$TARGET_CONF")
-		# remove lv
-		$SUDO $LVREMOVE -f $VG_NAME/$TARGET_LV_NAME
-	EOF
-	)
+    DELETE_CMD=$(cat <<EOF
+        set -e
+        # get tid for IQN
+        TID=\$($SUDO $(tgtadm_get_tid_for_iqn "$NEW_IQN"))
+
+        # remove iscsi target
+        $SUDO $(tgtadm_target_delete "\$TID")
+
+        # dump configuration
+        $SUDO $(tgt_admin_dump_config "$TARGET_CONF")
+
+        # remove lv
+        $SUDO $LVREMOVE -f $VG_NAME/$TARGET_LV_NAME
+EOF
+)
 elif [ "$VBD_TYPE" = "zfs" ]
 then
-	DELETE_CMD=$(cat <<EOF
-		set -e
-		# get tid for IQN
-		TID=\$($SUDO $(tgtadm_get_tid_for_iqn "$NEW_IQN"))
+    DELETE_CMD=$(cat <<EOF
+        set -e
+        # get tid for IQN
+        TID=\$($SUDO $(tgtadm_get_tid_for_iqn "$NEW_IQN"))
 
-		# remove iscsi target
-		$SUDO $(tgtadm_target_delete "\$TID")
+        # remove iscsi target
+        $SUDO $(tgtadm_target_delete "\$TID")
 
-		# dump configuration
-		$SUDO $(tgt_admin_dump_config "$TARGET_CONF")
+        # dump configuration
+        $SUDO $(tgt_admin_dump_config "$TARGET_CONF")
 
-		# remove lv
-		$SUDO zfs destroy $DATASET_NAME/$LV_NAME
-	EOF
-	)
+        # remove lv
+        $SUDO /bin/rm /$DATASET_NAME/$LV_NAME
+        $SUDO /sbin/zfs destroy $DATASET_NAME/$LV_NAME
+EOF
+)
 fi
 
 ssh_exec_and_log "$TARGET_HOST" "$DELETE_CMD" \

@@ -130,6 +130,7 @@ if is_iscsi "$DST_HOST"; then
     # link
     DISK_BY_PATH=\$(ls /dev/disk/by-path/*$IQN-lun-1)
     ln -sf "\$DISK_BY_PATH" "$DST_PATH"
+    $SUDO /bin/chown oneadmin:oneadmin "\$DISK_BY_PATH"
 EOF
 )
 

@@ -51,8 +51,8 @@ done < <($XPATH     /DS_DRIVER_ACTION_DATA/DATASTORE/BASE_PATH \
                     /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/SAFE_DIRS \
                     /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/BRIDGE_LIST \
                     /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/VG_NAME \
-					/DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/DATASET_NAME \
-					/DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/VBD_TYPE \
+                    /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/DATASET_NAME \
+                    /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/VBD_TYPE \
                     /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/BASE_IQN \
                     /DS_DRIVER_ACTION_DATA/IMAGE/FSTYPE \
                     /DS_DRIVER_ACTION_DATA/IMAGE/SIZE)
@@ -81,39 +81,40 @@ tgt_setup_lun_install "$DST_HOST" "$BASE_PATH"
 set_up_datastore "$BASE_PATH" "$RESTRICTED_DIRS" "$SAFE_DIRS"
 
 LV_NAME="lv-one-${ID}"
-DEV=""
-IQN=""
-REGISTER_CMD=""
 
 if [ "$VBD_TYPE" = "lvm" ]
 then
-	IQN="$BASE_IQN:$DST_HOST.$VG_NAME.$LV_NAME"
-	REGISTER_CMD=$(cat <<EOF
-		set -e
-		$SUDO $LVCREATE -L${SIZE}M ${VG_NAME} -n ${LV_NAME}
-		$SUDO $(tgt_setup_lun "$IQN" "$DEV")
-		$SUDO $(tgt_admin_dump_config "$TARGET_CONF")
-		if [ "$FSTYPE" != "save_as" ]; then
-			$SUDO $(mkfs_command "$DEV" "$FSTYPE")
-		fi
-	EOF
-	)
+    IQN="$BASE_IQN:$DST_HOST.$VG_NAME.$LV_NAME"
+    DEV="/dev/$VG_NAME/$LV_NAME"
+
+    REGISTER_CMD=$(cat <<EOF
+        set -e
+        $SUDO $LVCREATE -L${SIZE}M ${VG_NAME} -n ${LV_NAME}
+
+        $SUDO $(tgt_setup_lun "$IQN" "$DEV")
+        $SUDO $(tgt_admin_dump_config "$TARGET_CONF")
+
+        if [ "$FSTYPE" != "save_as" ]; then
+            $SUDO $(mkfs_command "$DEV" "$FSTYPE")
+        fi
+EOF
+)
 elif [ "$VBD_TYPE" = "zfs" ]
 then
-	_DATASET_NAME=$(echo $DATASET_NAME | awk -F'/' '{out=$1; for(i=2;i<=NF;i++){out=out"-"$i}; print out}')
-	IQN="$BASE_IQN:$DST_HOST.$_DATASET_NAME.$LV_NAME"
-	REGISTER_CMD=$(cat <<EOF
-		set -e
-		$SUDO zfs create -V ${SIZE}M ${DATASET_NAME}/${LV_NAME}
-		$SUDO $(tgt_setup_lun "$IQN" "$DEV")
-		$SUDO $(tgt_admin_dump_config "$TARGET_CONF")
-		if [ "$FSTYPE" != "save_as" ]; then
-			$SUDO $(mkfs_command "$DEV" "$FSTYPE")
-		fi
-	EOF
-	)
+    _DATASET_NAME=$(echo $DATASET_NAME | awk -F'/' '{out=$1; for(i=2;i<=NF;i++){out=out"-"$i}; print out}')
+    IQN="$BASE_IQN:$DST_HOST.$_DATASET_NAME.$LV_NAME"
+    REGISTER_CMD=$(cat <<EOF
+        set -e
+        $SUDO /sbin/zfs create -V ${SIZE}M ${DATASET_NAME}/${LV_NAME}
+        $SUDO /usr/bin/touch /${DATASET_NAME}/${LV_NAME}
+        $SUDO $(tgt_setup_lun "$IQN" "$DEV")
+        $SUDO $(tgt_admin_dump_config "$TARGET_CONF")
+        if [ "$FSTYPE" != "save_as" ]; then
+            $SUDO $(mkfs_command "$DEV" "$FSTYPE")
+        fi
+EOF
+)
 fi
-
 
 ssh_exec_and_log "$DST_HOST" "$REGISTER_CMD" \
  "Error registering $DST_HOST:$DEV"

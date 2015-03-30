@@ -84,67 +84,66 @@ ssh_exec_and_log "$SRC_HOST" "$LOGOUT_CMD" \
 # Exit if not save_as. We are finished if this was a persistent image.
 [ -z "$SAVE_AS" ] && exit 0
 
+#-------------------------------------------------------------------------------
+# IQN and TARGETs
+#-------------------------------------------------------------------------------
 if [ "$VBD_TYPE" = "lvm" ]
 then	
-	#-------------------------------------------------------------------------------
-	# IQN and TARGETs
-	#-------------------------------------------------------------------------------
+    LV_NAME=`echo $IQN|$AWK -F. '{print $(NF)}'`
+    VG_NAME=`echo $IQN|$AWK -F. '{print $(NF-1)}'`
+    SOURCE_DEV="/dev/$VG_NAME/$LV_NAME"
 
-	LV_NAME=`echo $IQN|$AWK -F. '{print $(NF)}'`
-	VG_NAME=`echo $IQN|$AWK -F. '{print $(NF-1)}'`
-	SOURCE_DEV="/dev/$VG_NAME/$LV_NAME"
+    TARGET=`arg_path $IQN`
+    TARGET_LV_NAME=`echo $NEW_IQN|$AWK -F. '{print $(NF)}'`
+    TARGET_DEV="/dev/$VG_NAME/$TARGET_LV_NAME"
+    TARGET_HOST="${TARGET%.$VG_NAME.$LV_NAME}"
 
-	TARGET=`arg_path $IQN`
-	TARGET_LV_NAME=`echo $NEW_IQN|$AWK -F. '{print $(NF)}'`
-	TARGET_DEV="/dev/$VG_NAME/$TARGET_LV_NAME"
-	TARGET_HOST="${TARGET%.$VG_NAME.$LV_NAME}"
+    CLONE_CMD=$(cat <<EOF
+        set -e
 
-	CLONE_CMD=$(cat <<EOF
-		set -e
-		# clone lv with dd
-		$SUDO $DD if=$SOURCE_DEV of=$TARGET_DEV bs=2M
-		# remove if source_dev is not persistent
-		if [ -z "$PERSISTENT" ]; then
-			TID=\$($SUDO $(tgtadm_get_tid_for_iqn "$IQN"))
-			$SUDO $(tgtadm_target_delete "\$TID")
-			$SUDO $SYNC
-			$SUDO $LVREMOVE -f $VG_NAME/$LV_NAME
-			$SUDO $(tgt_admin_dump_config "$TARGET_CONF")
-		fi
-	EOF
-	)
+        # clone lv with dd
+        $SUDO $DD if=$SOURCE_DEV of=$TARGET_DEV bs=2M
+
+        # remove if source_dev is not persistent
+        if [ -z "$PERSISTENT" ]; then
+            TID=\$($SUDO $(tgtadm_get_tid_for_iqn "$IQN"))
+
+            $SUDO $(tgtadm_target_delete "\$TID")
+            $SUDO $SYNC
+            $SUDO $LVREMOVE -f $VG_NAME/$LV_NAME
+            $SUDO $(tgt_admin_dump_config "$TARGET_CONF")
+        fi
+EOF
+)
 elif [ "$VBD_TYPE" = "zfs" ]
 then
-	#-------------------------------------------------------------------------------
-	# IQN and TARGETs
-	#-------------------------------------------------------------------------------
+    LV_NAME=`echo $IQN|$AWK -F. '{print $(NF)}'`
+    _DATASET_NAME=`echo $IQN|$AWK -F. '{print $(NF-1)}'`
+    SOURCE_DEV="/$DATASET_NAME/$LV_NAME"
 
-	LV_NAME=`echo $IQN|$AWK -F. '{print $(NF)}'`
-	_DATASET_NAME=`echo $IQN|$AWK -F. '{print $(NF-1)}'`
-	SOURCE_DEV="/$DATASET_NAME/$LV_NAME"
+    TARGET=`arg_path $IQN`
+    TARGET_LV_NAME=`echo $NEW_IQN|$AWK -F. '{print $(NF)}'`
+    TARGET_DEV="/$DATASET_NAME/$TARGET_LV_NAME"
+    TARGET_HOST="${TARGET%.$_DATASET_NAME.$LV_NAME}"
 
-	TARGET=`arg_path $IQN`
-	TARGET_LV_NAME=`echo $NEW_IQN|$AWK -F. '{print $(NF)}'`
-	TARGET_DEV="/$DATASET_NAME/$TARGET_LV_NAME"
-	TARGET_HOST="${TARGET%.$_DATASET_NAME.$LV_NAME}"
+    CLONE_CMD=$(cat <<EOF
+        set -e
 
-	CLONE_CMD=$(cat <<EOF
-		set -e
+        # clone lv with dd
+        $SUDO $DD if=$SOURCE_DEV of=$TARGET_DEV bs=2M
 
-		# clone lv with dd
-		$SUDO $DD if=$SOURCE_DEV of=$TARGET_DEV bs=2M
+        # remove if source_dev is not persistent
+        if [ -z "$PERSISTENT" ]; then
+            TID=\$($SUDO $(tgtadm_get_tid_for_iqn "$IQN"))
 
-		# remove if source_dev is not persistent
-		if [ -z "$PERSISTENT" ]; then
-			TID=\$($SUDO $(tgtadm_get_tid_for_iqn "$IQN"))
-
-			$SUDO $(tgtadm_target_delete "\$TID")
-			$SUDO $SYNC
-			$SUDO zfs destroy $DATASET_NAME/$LV_NAME
-			$SUDO $(tgt_admin_dump_config "$TARGET_CONF")
-		fi
-	EOF
-	)
+            $SUDO $(tgtadm_target_delete "\$TID")
+            $SUDO $SYNC
+            $SUDO /bin/rm /$DATASET_NAME/$LV_NAME
+            $SUDO /sbin/zfs destroy $DATASET_NAME/$LV_NAME
+            $SUDO $(tgt_admin_dump_config "$TARGET_CONF")
+        fi
+EOF
+)
 fi
 
 ssh_exec_and_log "$TARGET_HOST" "$CLONE_CMD" \

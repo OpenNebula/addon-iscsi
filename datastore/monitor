@@ -47,8 +47,8 @@ while IFS= read -r -d '' element; do
     XPATH_ELEMENTS[i++]="$element"
 done < <($XPATH     /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/BRIDGE_LIST \
                     /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/VG_NAME \
-					/DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/DATASET_NAME \
-					/DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/VBD_TYPE)
+                    /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/DATASET_NAME \
+                    /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/VBD_TYPE)
 
 BRIDGE_LIST="${XPATH_ELEMENTS[j++]}"
 VG_NAME="${XPATH_ELEMENTS[j++]:-$VG_NAME}"
@@ -63,37 +63,36 @@ if [ -z "$HOST" ]; then
 fi
 
 # ------------ Compute datastore usage -------------
-
-MONITOR_SCRIPT=""
-
 if [ "$VBD_TYPE" = "lvm" ]
 then
-	MONITOR_SCRIPT=$(cat <<EOF
-		set -e
-		VG_OPTS="--units M -C --noheadings --nosuffix $VG_NAME"
-		TOTAL_MB=\$($SUDO $VGDISPLAY -o vg_size \$VG_OPTS | $TR -d ' ')
-		FREE_MB=\$($SUDO $VGDISPLAY -o vg_free \$VG_OPTS | $TR -d ' ')
-		USED_MB=\$($AWK "BEGIN {print \$TOTAL_MB - \$FREE_MB}")
-		echo "USED_MB=\$USED_MB"
-		echo "TOTAL_MB=\$TOTAL_MB"
-		echo "FREE_MB=\$FREE_MB"
-	EOF
-	)
+    MONITOR_SCRIPT=$(cat <<EOF
+        set -e
+
+        VG_OPTS="--units M -C --noheadings --nosuffix $VG_NAME"
+
+        TOTAL_MB=\$($SUDO $VGDISPLAY -o vg_size \$VG_OPTS | $TR -d ' ')
+        FREE_MB=\$($SUDO $VGDISPLAY -o vg_free \$VG_OPTS | $TR -d ' ')
+        USED_MB=\$($AWK "BEGIN {print \$TOTAL_MB - \$FREE_MB}")
+
+        echo "USED_MB=\$USED_MB"
+        echo "TOTAL_MB=\$TOTAL_MB"
+        echo "FREE_MB=\$FREE_MB"
+EOF
+)
 elif [ "$VBD_TYPE" = "zfs" ]
 then
-	MONITOR_SCRIPT=$(cat <<EOF
-		set -e
-		TOTAL_MB=\$($SUDO zfs list -H -p  -o available,used $DATASET_NAME | $AWK '{printf "%d", ($1+$2)/1024/1024}'  | $TR -d ' ')
-		FREE_MB=\$($SUDO zfs get -H -p available $DATASET_NAME | $AWK '{printf "%d",$3/1024/1024}' | $TR -d ' ')
-		USED_MB=\$($SUDO zfs get -H -p used $DATASET_NAME | $AWK '{printf "%d",$3/1024/1024}' | $TR -d ' ')
-
-		echo "USED_MB=\$USED_MB"
-		echo "TOTAL_MB=\$TOTAL_MB"
-		echo "FREE_MB=\$FREE_MB"
-	EOF
-	)
+MONITOR_SCRIPT=$(cat <<EOF
+set -e
+TOTAL_MB=\$($SUDO /sbin/zfs list -H -p  -o available,used $DATASET_NAME | $AWK '{printf "%d", (\$1+\$2)/1024/1024}'  | $TR -d ' ')
+FREE_MB=\$($SUDO /sbin/zfs get -H -p available $DATASET_NAME | $AWK '{printf "%d",\$3/1024/1024}' | $TR -d ' ')
+USED_MB=\$($SUDO /sbin/zfs get -H -p used $DATASET_NAME | $AWK '{printf "%d",\$3/1024/1024}' | $TR -d ' ')
+echo "USED_MB=\$USED_MB"
+echo "TOTAL_MB=\$TOTAL_MB"
+echo "FREE_MB=\$FREE_MB"
+EOF
+)
 fi
-	
+
 MONITOR_DATA=$(ssh_monitor_and_log $HOST "$MONITOR_SCRIPT" 2>&1)
 MONITOR_STATUS=$?
 
