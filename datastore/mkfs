@@ -103,10 +103,10 @@ elif [ "$VBD_TYPE" = "zfs" ]
 then
     _DATASET_NAME=$(echo $DATASET_NAME | awk -F'/' '{out=$1; for(i=2;i<=NF;i++){out=out"-"$i}; print out}')
     IQN="$BASE_IQN:$DST_HOST.$_DATASET_NAME.$LV_NAME"
+    DEV="/dev/zvol/$VG_NAME/$LV_NAME"
     REGISTER_CMD=$(cat <<EOF
         set -e
         $SUDO /sbin/zfs create -V ${SIZE}M ${DATASET_NAME}/${LV_NAME}
-        $SUDO /usr/bin/touch /${DATASET_NAME}/${LV_NAME}
         $SUDO $(tgt_setup_lun "$IQN" "$DEV")
         $SUDO $(tgt_admin_dump_config "$TARGET_CONF")
         if [ "$FSTYPE" != "save_as" ]; then

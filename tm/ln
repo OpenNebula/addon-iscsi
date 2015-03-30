@@ -64,7 +64,7 @@ elif [ "$VBD_TYPE" = "zfs" ]
 then
     LV_NAME=`echo $TARGET|$AWK -F. '{print $(NF)}'`
     _DATASET_NAME=`echo $TARGET|$AWK -F. '{print $(NF-1)}'`
-    TARGET_DEV="/$DATASET_NAME/$LV_NAME"
+    TARGET_DEV="/dev/zvol/$DATASET_NAME/$LV_NAME"
     TARGET_HOST=${TARGET%.$_DATASET_NAME.$LV_NAME}
 fi
 

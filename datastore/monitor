@@ -81,14 +81,14 @@ EOF
 )
 elif [ "$VBD_TYPE" = "zfs" ]
 then
-MONITOR_SCRIPT=$(cat <<EOF
-set -e
-TOTAL_MB=\$($SUDO /sbin/zfs list -H -p  -o available,used $DATASET_NAME | $AWK '{printf "%d", (\$1+\$2)/1024/1024}'  | $TR -d ' ')
-FREE_MB=\$($SUDO /sbin/zfs get -H -p available $DATASET_NAME | $AWK '{printf "%d",\$3/1024/1024}' | $TR -d ' ')
-USED_MB=\$($SUDO /sbin/zfs get -H -p used $DATASET_NAME | $AWK '{printf "%d",\$3/1024/1024}' | $TR -d ' ')
-echo "USED_MB=\$USED_MB"
-echo "TOTAL_MB=\$TOTAL_MB"
-echo "FREE_MB=\$FREE_MB"
+    MONITOR_SCRIPT=$(cat <<EOF
+        set -e
+        TOTAL_MB=\$($SUDO /sbin/zfs list -H -p  -o available,used $DATASET_NAME | $AWK '{printf "%d", (\$1+\$2)/1024/1024}'  | $TR -d ' ')
+        FREE_MB=\$($SUDO /sbin/zfs get -H -p available $DATASET_NAME | $AWK '{printf "%d",\$3/1024/1024}' | $TR -d ' ')
+        USED_MB=\$($SUDO /sbin/zfs get -H -p used $DATASET_NAME | $AWK '{printf "%d",\$3/1024/1024}' | $TR -d ' ')
+        echo "USED_MB=\$USED_MB"
+        echo "TOTAL_MB=\$TOTAL_MB"
+        echo "FREE_MB=\$FREE_MB"
 EOF
 )
 fi

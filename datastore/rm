@@ -90,13 +90,12 @@ then
     LV_NAME=`echo $TARGET|$AWK -F. '{print $(NF)}'`
     _DATASET_NAME=`echo $TARGET|$AWK -F. '{print $(NF-1)}'`
     IQN="$BASE_IQN:$DST_HOST.$_DATASET_NAME.$LV_NAME"
-    DEV="/$DATASET_NAME/$LV_NAME"
+    DEV="/dev/zvol/$DATASET_NAME/$LV_NAME"
     RM_COMMAND=$(cat <<EOF
         set -e
         TID=\$($SUDO $(tgtadm_get_tid_for_iqn "$IQN"))
         $SUDO $(tgtadm_target_delete "\$TID")
         $SUDO $SYNC
-        $SUDO /bin/rm /$DATASET_NAME/$LV_NAME
         $SUDO /sbin/zfs destroy $DATASET_NAME/$LV_NAME
         $SUDO $(tgt_admin_dump_config "$TARGET_CONF")
 EOF

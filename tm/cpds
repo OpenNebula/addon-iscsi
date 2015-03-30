@@ -94,11 +94,11 @@ elif [ "$VBD_TYPE" = "zfs" ]
 then
     LV_NAME=`echo $IQN|$AWK -F. '{print $(NF)}'`
     _DATASET_NAME=`echo $IQN|$AWK -F. '{print $(NF-1)}'`
-    SOURCE_DEV="/$DATASET_NAME/$LV_NAME"
+    SOURCE_DEV="/dev/zvol/$DATASET_NAME/$LV_NAME"
 
     TARGET=`arg_path $IQN`
     TARGET_LV_NAME=`echo $NEW_IQN|$AWK -F. '{print $(NF)}'`
-    TARGET_DEV="/$DATASET_NAME/$TARGET_LV_NAME"
+    TARGET_DEV="/dev/zvol/$DATASET_NAME/$TARGET_LV_NAME"
     TARGET_HOST="${TARGET%.$_DATASET_NAME.$LV_NAME}"
 
     CLONE_CMD=$(cat <<EOF
