@@ -18,10 +18,11 @@ More info:
 
 * Leader: Jaime Melis (jmelis@c12g.com)
 * Erez Zilber (tgt-setup-lun-one)
+* Yagna Srinath (srinathreddib@gmail.com)
 
 ## Compatibility
 
-This add-on is compatible with OpenNebula 4.6.
+This add-on is compatible with OpenNebula 4.10.
 
 ## Requirements
 
@@ -32,7 +33,7 @@ Password-less ssh access to the iSCSI target as the oneadmin user from the front
 ### The iSCSI Target
 
 Manual installation of the supplied `tgt-setup-lun-one` script. This script will be installed under the share directory of OpenNebula (`/usr/share/one` or `/usr/share/opennebula` depending on the distribution). This script script should be installed in the iSCSI target somewhere in the `PATH`, e.g. `/usr/sbin/tgt-setup-lun-one` and it should belong to root.
-Password-less sudo permission for: `tgtadm`, `tgt-setup-lun-one`, `lvcreate`, `lvremove` and `dd`.
+Password-less sudo permission for: `tgtadm`, `tgt-setup-lun-one`, LVM(`lvcreate`, `lvremove` and `dd`), ZFS(`zfs`,`tee`,`chown`)
 LVM2 Linux SCSI target framework (tgt).
 
 ## Limitations
@@ -53,7 +54,7 @@ To install the driver you have to copy these files:
 
 ### Configuring the System Datastore
 
-To use iSCSI drivers, you must configure the system datastore as shared. This sytem datastore will hold only the symbolic links to the block devices, so it will not take much space. See more details on the [System Datastore Guide](http://docs.opennebula.org/4.6/administration/storage/system_ds.html).
+To use iSCSI drivers, you must configure the system datastore as shared. This system datastore will hold only the symbolic links to the block devices, so it will not take much space. See more details on the [System Datastore Guide](http://docs.opennebula.org/4.6/administration/storage/system_ds.html).
 
 It will also be used to hold context images and Disks created on the fly, they will be created as regular files.
 
@@ -67,6 +68,8 @@ The first step to create a iSCSI datastore is to set up a template file for it. 
 * **DISK_TYPE**: Type for the VM disks using images from this datastore. Supported values are: block, file
 * **BRIDGE_LIST**: The tgt server host. Defaults to localhost
 * **VG_NAME**: The LVM volume group name. Defaults to vg-one
+* **DATASET_NAME**: The top level dataset name under which all volumes are created
+* **VBD_TYPE**: Type of Backend for tgt-server. Supported values are: lvm, zfs. Defaults to lvm
 * **BASE_IQN**: The base IQN for iSCSI target. Defaults to iqn.2012-02.org.opennebula
 * **RESTRICTED_DIRS**: Paths that can not be used to register images. A space separated list of paths. (1)
 * **SAFE_DIRS**: If you need to un-block a directory under one of the RESTRICTED_DIRS. A space separated list of paths.
@@ -160,6 +163,8 @@ The default values can be modified in `/var/lib/one/remotes/datastore/iscsi/iscs
 * **HOST**: Default iSCSI target host. Default: `localhost`
 * **BASE_IQN**: Default IQN path. Default: `iqn.2012-02.org.opennebula`
 * **VG_NAME**: Default volume group. Default: `vg-one`
+* **VBD_TYPE**: Default tgt backend type. Default: `lvm`
+* **DATASET_NAME**: Default dataset name for ZFS. Default: `dataset-one`
 * **NO_ISCSI**: Lists of hosts (separated by spaces) for which no iscsiadm login or logout is performed. Default: `$HOSTNAME`
 * **TARGET_CONF**: File where the iSCSI configured is dumped to (`tgt-admin –dump`). If it poings to `/dev/null`, iSCSI targets will not be persistent. Default: `/etc/tgt/targets.conf`
 
@@ -187,6 +192,7 @@ Under `/var/lib/one/remotes/`:
     * **HOST**: Default iSCSI target host
     * **BASE_IQN**: Default IQN path
     * **VG_NAME**: Default volume group
+	* **VBD_TYPE**: Default is lvm
     * **BASE_TID**: Starting TID for iSCSI targets
     * **NO_ISCSI**: Lists of hosts (separated by spaces) for which no iscsiadm login or logout.
 * `scripts_common.sh`: includes all the iSCSI methods:
