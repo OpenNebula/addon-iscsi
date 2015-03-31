@@ -49,6 +49,8 @@ done < <($XPATH     /DS_DRIVER_ACTION_DATA/DATASTORE/BASE_PATH \
                     /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/SAFE_DIRS \
                     /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/BRIDGE_LIST \
                     /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/VG_NAME \
+                    /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/DATASET_NAME \
+                    /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/VBD_TYPE \
                     /DS_DRIVER_ACTION_DATA/DATASTORE/TEMPLATE/BASE_IQN \
                     /DS_DRIVER_ACTION_DATA/IMAGE/PATH \
                     /DS_DRIVER_ACTION_DATA/IMAGE/SIZE)
@@ -58,6 +60,8 @@ RESTRICTED_DIRS="${XPATH_ELEMENTS[j++]}"
 SAFE_DIRS="${XPATH_ELEMENTS[j++]}"
 BRIDGE_LIST="${XPATH_ELEMENTS[j++]}"
 VG_NAME="${XPATH_ELEMENTS[j++]:-$VG_NAME}"
+DATASET_NAME="${XPATH_ELEMENTS[j++]:-$DATASET_NAME}"
+VBD_TYPE="${XPATH_ELEMENTS[j++]:-$VBD_TYPE}"
 BASE_IQN="${XPATH_ELEMENTS[j++]:-$BASE_IQN}"
 SRC="${XPATH_ELEMENTS[j++]}"
 SIZE="${XPATH_ELEMENTS[j++]}"
@@ -75,22 +79,40 @@ tgt_setup_lun_install "$DST_HOST" "$BASE_PATH"
 set_up_datastore "$BASE_PATH" "$RESTRICTED_DIRS" "$SAFE_DIRS"
 
 LV_NAME="lv-one-${ID}"
-IQN="$BASE_IQN:$DST_HOST.$VG_NAME.$LV_NAME"
-DEV="/dev/$VG_NAME/$LV_NAME"
 
-LV_SRC=$(echo $SRC|awk -F. '{print $NF}')
-DEV_SRC="/dev/$VG_NAME/$LV_SRC"
+if [ "$VBD_TYPE" = "lvm" ]
+then
+    IQN="$BASE_IQN:$DST_HOST.$VG_NAME.$LV_NAME"
+    DEV="/dev/$VG_NAME/$LV_NAME"
 
-CLONE_CMD=$(cat <<EOF
-    set -e
-    $SUDO $LVCREATE -L${SIZE}M ${VG_NAME} -n ${LV_NAME}
-    $SUDO $DD if=$DEV_SRC of=$DEV bs=2M
+    LV_SRC=$(echo $SRC|awk -F. '{print $NF}')
+    DEV_SRC="/dev/$VG_NAME/$LV_SRC"
 
-    $SUDO $(tgt_setup_lun "$IQN" "$DEV")
-    $SUDO $(tgt_admin_dump_config "$TARGET_CONF")
+    CLONE_CMD=$(cat <<EOF
+        set -e
+        $SUDO $LVCREATE -L${SIZE}M ${VG_NAME} -n ${LV_NAME}
+        $SUDO $DD if=$DEV_SRC of=$DEV bs=2M
+
+        $SUDO $(tgt_setup_lun "$IQN" "$DEV")
+        $SUDO $(tgt_admin_dump_config "$TARGET_CONF")
 EOF
 )
-
+elif [ "$VBD_TYPE" = "zfs" ]
+then
+    _DATASET_NAME=$(echo $DATASET_NAME | awk -F'/' '{out=$1; for(i=2;i<=NF;i++){out=out"-"$i}; print out}')
+    IQN="$BASE_IQN:$DST_HOST.$_DATASET_NAME.$LV_NAME"
+    LV_SRC=$(echo $SRC|awk -F. '{print $NF}')
+    DEV="/dev/zvol/$DATASET_NAME/$LV_NAME"
+    DEV_SRC="/dev/zvol/$DATASET_NAME/$LV_SRC"
+    CLONE_CMD=$(cat <<EOF
+        set -e
+        $SUDO /sbin/zfs create -V ${SIZE}M ${DATASET_NAME}/${LV_NAME}
+        $SUDO $DD if=$DEV_SRC of=$DEV bs=2M
+        $SUDO $(tgt_setup_lun "$IQN" "$DEV")
+        $SUDO $(tgt_admin_dump_config "$TARGET_CONF")
+EOF
+)
+fi
 ssh_exec_and_log "$DST_HOST" "$CLONE_CMD" \
     "Error cloning $DEV_SRC to $DEV in $DST_HOST"
 
