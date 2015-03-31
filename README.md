@@ -18,7 +18,7 @@ More info:
 
 * Leader: Jaime Melis (jmelis@c12g.com)
 * Erez Zilber (tgt-setup-lun-one)
-* Yagna Srinath (srinathreddib@gmail.com)
+* Yagna Srinath (zfs backend - srinathreddib@gmail.com)
 
 ## Compatibility
 
