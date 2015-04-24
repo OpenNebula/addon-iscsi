@@ -75,7 +75,7 @@ CLONE_CMD=$(cat <<EOF
     set -e
 
     # get size
-    SIZE=\$($SUDO $LVS --noheadings -o lv_size "$SOURCE_DEV")
+    SIZE=\$($SUDO $LVS --noheadings -o lv_size --units B "$SOURCE_DEV")
 
     # create lv
     $SUDO $LVCREATE -L\${SIZE} ${VG_NAME} -n ${TARGET_LV_NAME}
