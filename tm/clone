@@ -111,10 +111,11 @@ then
         # get size
         SIZE=\$($SUDO /sbin/zfs list -H -p  -o used $DATASET_NAME/$LV_NAME | $AWK '{printf "%d", \$1}'  | $TR -d ' ')
         # create lv
-        $SUDO /sbin/zfs create -V \${SIZE} ${DATASET_NAME}/${TARGET_LV_NAME}
+        #$SUDO /sbin/zfs create -V \${SIZE} ${DATASET_NAME}/${TARGET_LV_NAME}
 
         # clone lv with dd
-        $SUDO $DD if=$SOURCE_DEV of=$TARGET_DEV bs=2M
+        #$SUDO $DD if=$SOURCE_DEV of=$TARGET_DEV bs=2M
+        $SUDO /sbin/zfs clone ${DATASET_NAME}/${LV_NAME}@snap ${DATASET_NAME}/${TARGET_LV_NAME}
 
         # new iscsi target
         $SUDO $(tgt_setup_lun "$NEW_IQN" "$TARGET_DEV")

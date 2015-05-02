@@ -81,6 +81,7 @@ The first step to create a iSCSI datastore is to set up a template file for it. 
 
 For example, the following examples illustrates the creation of a iSCSI datastore using a configuration file. In this case we will use the host iscsitarget as our iSCSI target server.
 
+Note: zfs driver uses zfs clone utility instead of dd and hence performs better in some cases.
 ~~~~
 > cat ds.conf
 NAME = production

@@ -102,7 +102,8 @@ then
     TARGET_HOST="${TARGET%.$_DATASET_NAME.$LV_NAME}"
 
     CLONE_CMD=$(cat <<EOF
-        $SUDO $DD if=$SOURCE_DEV of=$TARGET_DEV bs=2M
+        #$SUDO $DD if=$SOURCE_DEV of=$TARGET_DEV bs=2M
+        $SUDO /sbin/zfs clone ${DATASET_NAME}/${LV_NAME}@snap ${DATASET_NAME}/${TARGET_LV_NAME}
 EOF
 )
 fi
