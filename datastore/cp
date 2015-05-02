@@ -147,4 +147,10 @@ ssh_exec_and_log "$DST_HOST" "$REGISTER_CMD" "Error registering $DST_HOST:$DEV"
 exec_and_log "eval $DUMP | $SSH $DST_HOST $SUDO $DD of=$DEV bs=2M" \
     "Error dumping $SRC to $DST_HOST:$DEV"
 
+if [ $VBD_TYPE = "zfs" ]
+then
+        ZFS_CLONE_CMD="$SUDO /sbin/zfs snapshot ${DATASET_NAME}/${LV_NAME}@snap"
+        exec_and_log "$SSH $DST_HOST $ZFS_CLONE_CMD"\
+           "Error dumping $SRC to $DST_HOST:$DEV"
+fi
 echo "$IQN"
