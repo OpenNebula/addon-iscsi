@@ -43,6 +43,7 @@ DRIVER_PATH=$(dirname $0)
 source ${DRIVER_PATH}/../../datastore/iscsi/iscsi.conf
 
 SRC_HOST=`arg_host $SRC`
+SRC_PATH=`arg_path $SRC`
 NEW_IQN="$DST"
 
 DISK_ID=$(echo $SRC|awk -F. '{print $NF}')
@@ -75,6 +76,9 @@ log "Logging out $IQN"
 LOGOUT_CMD=$(cat <<EOF
     set -e
     $SUDO $(iscsiadm_logout "$IQN")
+
+    # remove symbolic link on host
+    rm -f $SRC_PATH
 EOF
 )
 
