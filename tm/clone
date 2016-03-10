@@ -16,7 +16,7 @@
 # limitations under the License.                                             #
 #--------------------------------------------------------------------------- #
 
-# clone fe:SOURCE host:remote_system_ds/disk.i size vmid dsid
+# clone fe:SOURCE host:remote_system_ds/disk.i vmid dsid
 #   - fe is the front-end hostname
 #   - SOURCE is the path of the disk image in the form DS_BASE_PATH/disk
 #   - host is the target host to deploy the VM
@@ -52,6 +52,23 @@ DST_PATH=`arg_path $DST`
 DST_HOST=`arg_host $DST`
 DST_DIR=`dirname $DST_PATH`
 
+-------------------------------------------------------------------------------
+# Get Image information
+#-------------------------------------------------------------------------------
+
+DISK_ID=$(basename ${DST_PATH} | cut -d. -f2)
+
+XPATH="${DRIVER_PATH}/../../datastore/xpath.rb --stdin"
+
+unset i j XPATH_ELEMENTS
+
+while IFS= read -r -d '' element; do
+    XPATH_ELEMENTS[i++]="$element"
+done < <(onevm show -x $VMID| $XPATH \
+                    /VM/TEMPLATE/DISK[DISK_ID=$DISK_ID]/SIZE)
+
+NEWSIZE="${XPATH_ELEMENTS[j++]}"
+
 #-------------------------------------------------------------------------------
 # IQN and TARGETs
 #-------------------------------------------------------------------------------
@@ -75,10 +92,16 @@ CLONE_CMD=$(cat <<EOF
     set -e
 
     # get size
-    SIZE=\$($SUDO $LVS --noheadings -o lv_size --units B "$SOURCE_DEV")
+    SIZE=\$($SUDO $LVS --noheadings --nosuffix -o lv_size --units m "$SOURCE_DEV")
+
+    # If requested, use new size
+    if [ "\$(echo $NEWSIZE '>' \$SIZE | bc -l)" = "1" ]
+    then
+      SIZE=$NEWSIZE
+    fi
 
     # create lv
-    $SUDO $LVCREATE -L\${SIZE} ${VG_NAME} -n ${TARGET_LV_NAME}
+    $SUDO $LVCREATE -L\${SIZE}M ${VG_NAME} -n ${TARGET_LV_NAME}
 
     # clone lv with dd
     $SUDO $DD if=$SOURCE_DEV of=$TARGET_DEV bs=2M
