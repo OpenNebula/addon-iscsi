@@ -78,8 +78,9 @@ LV_NAME="lv-one-${ID}"
 IQN="$BASE_IQN:$DST_HOST.$VG_NAME.$LV_NAME"
 DEV="/dev/$VG_NAME/$LV_NAME"
 
+VG_SRC=$(echo $SRC|awk -F. '{print $(NF-1)}')
 LV_SRC=$(echo $SRC|awk -F. '{print $NF}')
-DEV_SRC="/dev/$VG_NAME/$LV_SRC"
+DEV_SRC="/dev/$VG_SRC/$LV_SRC"
 
 CLONE_CMD=$(cat <<EOF
     set -e
