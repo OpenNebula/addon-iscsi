@@ -21,7 +21,7 @@ More info:
 
 ## Compatibility
 
-This add-on is compatible with OpenNebula 4.6.
+This add-on is compatible with OpenNebula 4.14.
 
 ## Requirements
 
@@ -53,7 +53,7 @@ To install the driver you have to copy these files:
 
 ### Configuring the System Datastore
 
-To use iSCSI drivers, you must configure the system datastore as shared. This sytem datastore will hold only the symbolic links to the block devices, so it will not take much space. See more details on the [System Datastore Guide](http://docs.opennebula.org/4.6/administration/storage/system_ds.html).
+To use iSCSI drivers, you must configure the system datastore as shared. This sytem datastore will hold only the symbolic links to the block devices, so it will not take much space. See more details on the [System Datastore Guide](http://docs.opennebula.org/4.14/administration/storage/system_ds.html).
 
 It will also be used to hold context images and Disks created on the fly, they will be created as regular files.
 
